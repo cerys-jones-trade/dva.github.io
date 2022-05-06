@@ -1,0 +1,342 @@
+---
+  title: "Example FlexDashboard"
+always_allow_html: true
+output:
+  flexdashboard::flex_dashboard:
+  code_download: yes
+fig_caption: yes
+fig_height: 7
+fig_width: 9
+df_print: kable
+highlight: kate
+# theme:
+#   bootswatch: flatly
+theme: united
+# theme: darkly
+source_code: embed
+vertical_layout: fill
+orientation: columns
+navbar:
+  - { href: "https://gbr.delve.office.com/?u=3a8b68ea-97d7-495d-90dd-2c30f4cd5bcd", 
+    align: right, 
+    icon: "fa-user-astronaut"} 
+html_document:
+  fig_caption: yes
+fig_height: 5
+fig_width: 7
+number_sections: yes
+code_download: yes
+code_folding: hide
+highlight: kate
+theme: flatly
+df_print: kable
+toc: yes
+toc_depth: 6
+toc_float:
+  collapsed: no
+smooth_scroll: no
+editor_options: 
+  chunk_output_type: console
+---
+  
+  
+  
+  
+  .rpivotTable{ overflow-x: scroll; }
+
+
+
+```{r packages, include=FALSE}
+library(flexdashboard)
+library(ggplot2)
+library(viridis)
+library(DT)
+library(corrplot)
+library(plotly)
+library(ggmap)
+library(maps)
+library(rpivotTable)
+```
+
+
+
+
+
+Preview {data-navmenu="Data"}
+===
+  
+  Column {.tabset .tabset-fade}
+---
+  
+  ### Data Table
+  
+  ```{r dataPreview}
+datatable(ggplot2::mpg, 
+          style = 'bootstrap',
+          class = 'cell-border stripe hover compact',
+          filter = 'top',
+          options = list(bPaginate = T,
+                         autoWidth = TRUE,
+                         scrollX = TRUE))
+```
+
+### Data Properties
+
+#### Glimpse
+
+```{r}
+str(ggplot2::mpg)
+```
+
+#### Sumamry
+
+
+```{r}
+summary(ggplot2::mpg)
+```
+
+
+
+Exploration {data-navmenu="Data" vertical_layout=scroll}
+===
+  
+  Row
+---
+  
+  ### Pivot Table 
+  
+  ```{r}
+
+rpivotTable(data=ggplot2::mpg,
+            subtotals = TRUE)
+
+```
+
+
+BoxPlots {data-navmenu="Plots"}
+===
+  
+  Row {.tabset .tabset-fade}
+---
+  
+  ### STATIC - GGplot
+  
+  ```{r boxplot}
+
+ggplot(ggplot2::mpg) + 
+  geom_boxplot(aes(x=class, y=displ, fill = class), alpha= 0.25) +
+  geom_point(aes(x=class, y=displ, fill = class, colour = class), shape =21, alpha=0.5) +
+  scale_fill_viridis(discrete = T) +
+  scale_color_viridis(discrete = T) +
+  scale_y_log10()+
+  theme_light()+
+  theme(legend.position="bottom", legend.direction = "horizontal")
+
+```
+
+### INTERACTIVE - Plotly
+
+```{r}
+
+
+BoxPlot <- ggplot(ggplot2::mpg) + 
+  geom_boxplot(aes(x=class, y=displ, fill = class), alpha= 0.25) +
+  geom_point(aes(x=class, y=displ, fill = class, colour = class), shape =21, alpha=0.5) +
+  scale_fill_viridis(discrete = T) +
+  scale_color_viridis(discrete = T) +
+  scale_y_log10()+
+  theme_light()
+
+ggplotly(BoxPlot) %>%
+  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+
+```
+
+
+ScatterPlots {data-navmenu="Plots"}
+
+  
+  Row {.tabset .tabset-fade}
+
+  
+  ### STATIC - GGplot
+  
+  ```{r ScatterGGPlot}
+
+ggplot(ggplot2::mpg) +
+  geom_point(shape=21,
+             aes(x=displ,
+                 y=hwy,
+                 fill=class,
+                 colour=class,
+                 size=displ),
+             alpha=0.5) +
+  scale_y_log10() +
+  scale_fill_viridis(discrete=T) +
+  scale_colour_viridis(discrete=T) +
+  # scale_size(guide="none")+
+  theme_light() +
+  theme(legend.position="bottom", legend.direction = "horizontal") +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE)) +
+  guides(colour=guide_legend(nrow=1,byrow=TRUE)) +
+  guides(size=guide_legend(nrow=1,byrow=TRUE))
+
+```
+
+### INTERACTIVE - Plotly
+
+```{r}
+
+
+ScatterPlot <- ggplot(ggplot2::mpg) +
+  geom_point(shape=21,
+             aes(x=displ,
+                 y=hwy,
+                 fill=class,
+                 colour=class,
+                 size=displ),
+             alpha=0.5) +
+  scale_y_log10() +
+  scale_fill_viridis(discrete=T) +
+  scale_colour_viridis(discrete=T) +
+  # scale_size(guide="none")+
+  theme_light() +
+  theme(legend.position="bottom", legend.direction = "horizontal") +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE)) +
+  guides(colour=guide_legend(nrow=1,byrow=TRUE)) +
+  guides(size=guide_legend(nrow=1,byrow=TRUE))
+
+ggplotly(ScatterPlot) %>%
+  layout(legend = list(orientation = "h", x = 0.4, y = -0.2, xanchor='center'))
+
+```
+
+
+
+
+BarCharts {data-navmenu="Plots"}
+===
+  
+  Row {.tabset .tabset-fade}
+---
+  
+  ### STATIC - GGplot [bar]
+  
+  ```{r barchart}
+
+ggplot(ggplot2::mpg) + 
+  geom_bar(aes(x=displ, y=cty, fill = class), stat="identity") +
+  scale_fill_viridis(discrete = T) +
+  # facet_wrap(~class, scales = "free") +
+  # scale_y_log10() +
+  theme_light() +
+  theme(legend.position="bottom", legend.direction = "horizontal") +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE))
+
+```
+
+### INTERACTIVE - Plotly
+
+```{r}
+
+
+BarChart <- ggplot(ggplot2::mpg) + 
+  geom_bar(aes(x=displ, y=cty, fill = class), stat="identity") +
+  scale_fill_viridis(discrete = T) +
+  # facet_wrap(~class, scales = "free") +
+  # scale_y_log10() +
+  theme_light() +
+  theme(legend.position="bottom", legend.direction = "horizontal") +
+  guides(fill=guide_legend(nrow=1,byrow=TRUE))
+
+ggplotly(BarChart) %>%
+  layout(legend = list(orientation = "h", x = 0.4, y = -0.2))
+
+```
+
+# Widgets
+
+## {.tabset .tabset-fade}
+
+
+
+### plotly
+
+```{r}
+library(plotly)
+
+# custom grid style
+axx <- list(
+  gridcolor='rgb(255, 255, 255)',
+  zerolinecolor='rgb(255, 255, 255)',
+  showbackground=TRUE,
+  backgroundcolor='rgb(230, 230,230)'
+)
+
+# individual plots
+fig1 <- plot_ly(z = ~volcano, scene='scene1') 
+fig1 <- fig1 %>% add_surface(showscale=FALSE)
+
+fig1
+
+```
+
+
+
+
+
+
+
+
+### crosstalk
+
+```{r}
+
+library(crosstalk)
+library(car)
+
+shared_mtcars <- SharedData$new(mtcars[1:50, c(1, 2, 4, 6:7, 10), drop =F])
+bscols(
+  widths = c(3,NA),
+  list(
+    filter_checkbox("cyl", "Cylinders", shared_mtcars, ~cyl, inline = TRUE),
+    filter_slider("hp", "Horsepower", shared_mtcars, ~hp, width = "100%"),
+    filter_select("gear", "Gear", shared_mtcars, ~gear),
+    plot_ly(shared_mtcars, x = ~wt, y = ~hp, z = ~qsec,
+            marker = list(color = ~mpg, colorscale = c('#FFE1A1', '#683531'), showscale = TRUE))
+  ),
+  datatable(shared_mtcars)
+)
+```
+
+
+### Leaflet
+
+```{r}
+library(leaflet)
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=174.768, lat=-36.852, popup="The birthplace of R")
+m  # Print the map
+```
+
+
+### visNetwork
+
+```{r}
+library(visNetwork)
+nodes <- data.frame(id = 1:6, title = paste("node", 1:6), 
+                    shape = c("dot", "square"),
+                    size = 10:15, color = c("blue", "red"))
+edges <- data.frame(from = 1:5, to = c(5, 4, 6, 3, 3))
+visNetwork(nodes, edges) %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
+```
+
+### dygraphs
+
+```{r}
+library(dygraphs)
+dygraph(nhtemp, main = "New Haven Temperatures") %>% 
+  dyRangeSelector(dateWindow = c("1920-01-01", "1960-01-01"))
+```
